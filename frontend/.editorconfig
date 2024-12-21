@@ -1,0 +1,2 @@
+[*.{js,jsx,cjs,mjs,json,ts,tsx}]
+tab_width = 2
