@@ -9,6 +9,7 @@ django-ninja = "*"
 django-environ = "*"
 pyjwt = "*"
 django-cors-headers = "*"
+pillow = "*"
 
 [dev-packages]
 

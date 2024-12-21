@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="bg-white min-h-screen">
+    <div className="bg-gray-50 min-h-screen">
       <div className="p-8 mx-auto text-gray-900 flex flex-col sm:flex-row items-center justify-center gap-8">
         <div className="">
           <svg

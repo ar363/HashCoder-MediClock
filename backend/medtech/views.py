@@ -1,10 +1,12 @@
-from ninja import NinjaAPI, Schema
+from ninja import NinjaAPI, Schema, UploadedFile
 from ninja.security import HttpBearer
 from django.http import HttpResponse
+from ninja.errors import HttpError
 import os
 import jwt
 from django.contrib.auth.models import User
 from django.conf import settings
+from . import models
 
 api = NinjaAPI(title="MedTech API", version="1.0.0")
 
@@ -37,10 +39,47 @@ def signup(request, data: SignupData, response: HttpResponse):
         correct_pw = u.check_password(data.password)
 
         if not correct_pw:
-            return {"error": "Password is incorrect"}
+            return api.create_response(
+                request, {"error": "Password is incorrect"}, status=401
+            )
     else:
-        u = User.objects.create_user(data.email, data.email, data.password)
+        u = User.objects.create_user(data.phone, None, data.password)
 
     token = jwt.encode({"userid": u.id}, settings.SECRET_KEY, algorithm="HS256")
 
-    return {"token": token}
+    relpatient = models.Patient.objects.filter(user=u).first()
+    return {
+        "token": token,
+        "id": u.id,
+        "patient": relpatient.as_dict() if relpatient else None,
+    }
+
+
+@api.get("/prescriptions", auth=auth)
+def prescriptions(request):
+    u = User.objects.filter(id=request.auth).first()
+    if not u:
+        return api.create_response(request, {"error": "User not found"}, status=200)
+
+    patient = models.Patient.objects.filter(user=u).first()
+    if not patient:
+        return api.create_response(
+            request, {"error": "Patient not found", "pdatafill": True}, status=200
+        )
+
+    prescriptions = models.Prescription.objects.filter(patient=patient)
+    return [p.as_dict() for p in prescriptions]
+
+
+@api.post("/prescriptions", auth=auth)
+def new_prescription(request, file: UploadedFile):
+    u = User.objects.filter(id=request.auth).first()
+    if not u:
+        return api.create_response(request, {"error": "User not found"}, status=200)
+
+    # data.patient = patient
+    # data.save()
+    # return data.as_dict()
+    models.Prescription.objects.create(user=u, image=file)
+
+    return {"o": 1}
