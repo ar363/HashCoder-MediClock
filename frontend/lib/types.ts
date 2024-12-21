@@ -1,6 +1,12 @@
 type PrescribedDrug = {
   id: number;
   drug: string;
+  drug_info: {
+    id: number;
+    pack_size: string;
+    price: number;
+    manufacturer: string;
+  };
   morning_qty: number;
   afternoon_qty: number;
   night_qty: number;

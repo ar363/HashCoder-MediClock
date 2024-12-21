@@ -28,7 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { SkeletonCard } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { getAuth, setAuth } from "@/lib/utils";
+import { getAuth, greeting, setAuth } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -40,6 +40,7 @@ export default function Dashboard() {
   const [prescriptions, setPrescriptions] = useState<Prescription[]>([]);
   const [needToFillDetails, setNeedToFillDetails] = useState(false);
   const [prescriptionDrawer, setPrescriptionDrawer] = useState(false);
+  const [medicines, setMedicines] = useState<PrescribedDrug[]>([]);
 
   const uploadPrescription = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -93,15 +94,87 @@ export default function Dashboard() {
       .then((res) => res.json())
       .then((data) => {
         setIsLoaded(true);
-        if (data.length) setPrescriptions(data);
+        if (data.pres && data.pres.length) setPrescriptions(data.pres);
         if (data.pdatafill) setNeedToFillDetails(true);
+        else {
+          setAuth(
+            Number.parseInt(getAuth().userid),
+            getAuth().token,
+            data.currentpdata
+          );
+        }
       });
   }, []);
 
+  useEffect(() => {
+    const meds: PrescribedDrug[] = [];
+    prescriptions.forEach((p) => {
+      p.drugs.forEach((d) => {
+        if (!meds.find((m) => m.drug_info.id === d.drug_info.id)) {
+          meds.push(d);
+        } else {
+          const med = meds.find((m) => m.drug_info.id === d.drug_info.id);
+          if (med) {
+            med.morning_qty += d.morning_qty;
+            med.afternoon_qty += d.afternoon_qty;
+            med.night_qty += d.night_qty;
+            med.custom_qty += d.custom_qty;
+          }
+        }
+      });
+    });
+
+    setMedicines(meds);
+  }, [prescriptions]);
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 text-gray-900">
       <div className="mx-auto p-4 max-w-screen-lg w-full">
-        <div className="flex justify-between">
+        <h1 className="italic mb-3 mt-2">
+          {greeting(getAuth().patient?.name || null)}
+        </h1>
+        {medicines.length > 0 && (
+          <>
+            <div className="text-xl font-semibold mb-4">Your medicines</div>
+
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+              {medicines.map((m) => (
+                <Card key={m.id}>
+                  <CardHeader>
+                    <CardTitle>{m.drug}</CardTitle>
+                    <CardDescription>
+                      {m.drug_info.manufacturer} &nbsp;&middot;&nbsp;{" "}
+                      {m.drug_info.pack_size}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="-mt-3">
+                    {m.custom_qty > 0 ? (
+                      <p>
+                        {m.custom_qty} at {m.custom_time}
+                      </p>
+                    ) : (
+                      <div className="flex gap-2">
+                        <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 rounded-full">
+                          <div className="text-xs text-rose-500">Morning</div>
+                          <div className="">{m.morning_qty}</div>
+                        </div>
+                        <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 rounded-full">
+                          <div className="text-xs text-rose-500">Afternoon</div>
+                          <div className="">{m.afternoon_qty}</div>
+                        </div>
+                        <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 rounded-full">
+                          <div className="text-xs text-rose-500">Night</div>
+                          <div className="">{m.night_qty}</div>
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </>
+        )}
+        <div className="flex justify-between items-center mb-4">
           <div className="text-xl font-semibold">Your prescriptions</div>
           <Button variant={"link"} onClick={() => setPrescriptionDrawer(true)}>
             Add new +
@@ -188,10 +261,14 @@ export default function Dashboard() {
                     />
                   </a>
                 </CardContent>
-                <CardFooter>
-                  {prescription.drugs.length === 0 && (
-                    <p className="italic text-gray-600">
+                <CardFooter className="-mt-3">
+                  {prescription.drugs.length === 0 ? (
+                    <p className="italic text-gray-600 text-sm">
                       Processing... please check back later
+                    </p>
+                  ) : (
+                    <p className="italic text-emerald-600 text-sm">
+                      Processed!
                     </p>
                   )}
                 </CardFooter>

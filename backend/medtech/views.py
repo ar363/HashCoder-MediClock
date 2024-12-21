@@ -64,11 +64,20 @@ def prescriptions(request):
     patient = models.Patient.objects.filter(user=u).first()
     if not patient:
         return api.create_response(
-            request, {"error": "Patient not found", "pdatafill": True}, status=200
+            request,
+            {
+                "error": "Patient not found",
+                "pdatafill": True,
+                "currentpdata": patient.as_dict() if patient else None,
+            },
+            status=200,
         )
 
     prescriptions = models.Prescription.objects.filter(user=u)
-    return [p.as_dict() for p in prescriptions]
+    return {
+        "pres": [p.as_dict() for p in prescriptions],
+        "currentpdata": patient.as_dict() if patient else None,
+    }
 
 
 @api.post("/prescriptions", auth=auth)
@@ -83,6 +92,7 @@ def new_prescription(request, file: UploadedFile):
 
 
 class PatientUpdateSchema(Schema):
+    name: str
     breakfast_time: str
     lunch_time: str
     dinner_time: str
@@ -100,6 +110,9 @@ def patient_update(request, data: PatientUpdateSchema):
         patient = models.Patient()
         patient.user = u
 
+    patient.name = data.name
+    u.first_name = data.name
+    u.save()
     patient.breakfast_time = data.breakfast_time
     patient.lunch_time = data.lunch_time
     patient.dinner_time = data.dinner_time
