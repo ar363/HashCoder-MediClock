@@ -1,0 +1,19 @@
+version: 3
+
+tasks:
+  djdev:
+    dir: backend
+    cmds:
+      - python3 manage.py runserver
+    desc: Run Django development server
+
+  uidev:
+    dir: frontend
+    cmds:
+      - npm run dev
+    desc: Run Nextjs development server
+
+  dev:
+    cmds:
+      - task -p djdev uidev
+    desc: Run all development servers
