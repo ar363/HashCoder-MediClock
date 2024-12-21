@@ -34,6 +34,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatRelative } from "date-fns";
 import { toast } from "sonner";
+import Fraction from 'fraction.js';
 
 export default function Dashboard() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -139,7 +140,7 @@ export default function Dashboard() {
 
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
               {medicines.map((m) => (
-                <Card key={m.id}>
+                <Card key={m.id} className="flex flex-col justify-between">
                   <CardHeader>
                     <CardTitle>{m.drug}</CardTitle>
                     <CardDescription>
@@ -150,21 +151,21 @@ export default function Dashboard() {
                   <CardContent className="-mt-3">
                     {m.custom_qty > 0 ? (
                       <p>
-                        {m.custom_qty} at {m.custom_time}
+                        {new Fraction(m.custom_qty).toFraction()} at {m.custom_time}
                       </p>
                     ) : (
                       <div className="flex gap-2">
                         <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 rounded-full">
                           <div className="text-xs text-rose-500">Morning</div>
-                          <div className="">{m.morning_qty}</div>
+                          <div className="">{new Fraction(m.morning_qty).toFraction()}</div>
                         </div>
                         <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 rounded-full">
                           <div className="text-xs text-rose-500">Afternoon</div>
-                          <div className="">{m.afternoon_qty}</div>
+                          <div className="">{new Fraction(m.afternoon_qty).toFraction()}</div>
                         </div>
                         <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 rounded-full">
                           <div className="text-xs text-rose-500">Night</div>
-                          <div className="">{m.night_qty}</div>
+                          <div className="">{new Fraction(m.night_qty).toFraction()}</div>
                         </div>
                       </div>
                     )}
@@ -242,7 +243,7 @@ export default function Dashboard() {
         )}
 
         {prescriptions && prescriptions.length > 0 && (
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
             {prescriptions.map((prescription) => (
               <Card key={prescription.id}>
                 <CardHeader>
@@ -257,14 +258,14 @@ export default function Dashboard() {
                   >
                     <img
                       src={`http://${location.hostname}:8000${prescription.image}`}
-                      className="h-[250px] object-cover w-full rounded-sm"
+                      className="h-[180px] object-cover w-full rounded-sm"
                     />
                   </a>
                 </CardContent>
                 <CardFooter className="-mt-3">
                   {prescription.drugs.length === 0 ? (
                     <p className="italic text-gray-600 text-sm">
-                      Processing... please check back later
+                      Processing...
                     </p>
                   ) : (
                     <p className="italic text-emerald-600 text-sm">
