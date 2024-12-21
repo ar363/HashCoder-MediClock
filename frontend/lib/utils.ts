@@ -16,6 +16,10 @@ export function getAuth(): {
     address: string;
   } | null;
 } {
+  if (typeof window === "undefined") {
+    return { token: "", userid: "", patient: null };
+  }
+
   let mtp;
   try {
     mtp = JSON.parse(localStorage.getItem("medtechpatient") as string);
@@ -24,8 +28,8 @@ export function getAuth(): {
   }
 
   const toSend = {
-    token: localStorage.getItem("medtechtoken"),
-    userid: localStorage.getItem("medtechuserid"),
+    token: localStorage.getItem("medtechtoken") || "",
+    userid: localStorage.getItem("medtechuserid") || "",
     patient: mtp,
   };
 

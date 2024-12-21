@@ -16,11 +16,13 @@ const DarkModeToggle: React.FC = () => {
 
   const toggleDarkMode = () => {
     setTheme(theme !== "light" ? "light" : "dark");
-    if (theme && theme == "light")
+    if (theme && theme == "light") {
       document.body.classList.add("dark");
-    else document.body.classList.remove("dark");
-
-    localStorage.setItem("theme", theme || "light");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.body.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
   };
 
   return (
