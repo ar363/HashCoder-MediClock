@@ -16,7 +16,6 @@ export function getAuth(): {
     address: string;
   } | null;
 } {
-
   let mtp;
   try {
     mtp = JSON.parse(localStorage.getItem("medtechpatient") as string);

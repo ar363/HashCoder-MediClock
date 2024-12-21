@@ -76,6 +76,30 @@ export default function Dashboard() {
     e.preventDefault();
     const data = Object.fromEntries(new FormData(e.target as HTMLFormElement));
 
+    if (
+      data.breakfast_time &&
+      typeof data.breakfast_time == "string" &&
+      data.breakfast_time.length === 5
+    ) {
+      data.breakfast_time += ":00";
+    }
+
+    if (
+      data.lunch_time &&
+      typeof data.lunch_time == "string" &&
+      data.lunch_time.length === 5
+    ) {
+      data.lunch_time += ":00";
+    }
+
+    if (
+      data.dinner_time &&
+      typeof data.dinner_time == "string" &&
+      data.dinner_time.length === 5
+    ) {
+      data.dinner_time += ":00";
+    }
+
     fetch(`http://${location.hostname}:8000/api/patient`, {
       method: "POST",
       headers: {
@@ -185,8 +209,9 @@ export default function Dashboard() {
                         "HH:mm:ss",
                         new Date()
                       ),
-                      "HH:mm aaaa"
+                      "h:mm aaaa"
                     )}
+                    {/* {getAuth().patient?.breakfast_time} */}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -215,8 +240,9 @@ export default function Dashboard() {
                         "HH:mm:ss",
                         new Date()
                       ),
-                      "HH:mm aaaa"
+                      "h:mm aaaa"
                     )}
+                    {/* {getAuth().patient?.lunch_time} */}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -245,8 +271,9 @@ export default function Dashboard() {
                         "HH:mm:ss",
                         new Date()
                       ),
-                      "HH:mm aaaa"
+                      "h:mm aaaa"
                     )}
+                    {/* {getAuth().patient?.dinner_time} */}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -409,15 +436,26 @@ export default function Dashboard() {
                       type="time"
                       id="breakfast_time"
                       name="breakfast_time"
+                      step={"time"}
                     />
                   </div>
                   <div className="">
                     <Label htmlFor="lunch_time">Lunch time</Label>
-                    <Input type="time" id="lunch_time" name="lunch_time" />
+                    <Input
+                      type="time"
+                      id="lunch_time"
+                      name="lunch_time"
+                      step={"time"}
+                    />
                   </div>
                   <div className="">
                     <Label htmlFor="dinner_time">Dinner time</Label>
-                    <Input type="time" id="dinner_time" name="dinner_time" />
+                    <Input
+                      type="time"
+                      id="dinner_time"
+                      name="dinner_time"
+                      step={"time"}
+                    />
                   </div>
                   <div className="">
                     <Label htmlFor="address">Address</Label>
