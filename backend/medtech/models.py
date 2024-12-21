@@ -92,6 +92,12 @@ class Prescription(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     notes = models.TextField(blank=True, null=True)
 
+    def patient_name(self):
+        if self.user.patient:
+            return self.user.patient.name
+        else:
+            return '-'
+
     def __str__(self):
         return f'Prescription for {self.user.username} - {self.created_at.strftime("%d-%m-%Y %H:%M:%S")}'
 

@@ -34,7 +34,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatRelative } from "date-fns";
 import { toast } from "sonner";
-import Fraction from 'fraction.js';
+import Fraction from "fraction.js";
 
 export default function Dashboard() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -46,8 +46,6 @@ export default function Dashboard() {
   const uploadPrescription = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const data = new FormData(e.target as HTMLFormElement);
-    console.log(data);
-    // data.append("file", );
 
     fetch(`http://${location.hostname}:8000/api/prescriptions`, {
       method: "POST",
@@ -151,21 +149,28 @@ export default function Dashboard() {
                   <CardContent className="-mt-3">
                     {m.custom_qty > 0 ? (
                       <p>
-                        {new Fraction(m.custom_qty).toFraction()} at {m.custom_time}
+                        {new Fraction(m.custom_qty).toFraction()} at{" "}
+                        {m.custom_time}
                       </p>
                     ) : (
                       <div className="flex gap-2">
                         <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 rounded-full">
                           <div className="text-xs text-rose-500">Morning</div>
-                          <div className="">{new Fraction(m.morning_qty).toFraction()}</div>
+                          <div className="">
+                            {new Fraction(m.morning_qty).toFraction()}
+                          </div>
                         </div>
                         <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 rounded-full">
                           <div className="text-xs text-rose-500">Afternoon</div>
-                          <div className="">{new Fraction(m.afternoon_qty).toFraction()}</div>
+                          <div className="">
+                            {new Fraction(m.afternoon_qty).toFraction()}
+                          </div>
                         </div>
                         <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 rounded-full">
                           <div className="text-xs text-rose-500">Night</div>
-                          <div className="">{new Fraction(m.night_qty).toFraction()}</div>
+                          <div className="">
+                            {new Fraction(m.night_qty).toFraction()}
+                          </div>
                         </div>
                       </div>
                     )}
@@ -238,7 +243,12 @@ export default function Dashboard() {
         {isLoaded && prescriptions && prescriptions.length === 0 && (
           <div className="mt-4 text-sm">
             No prescriptions found.
-            <Button variant={"link"}>Upload one?</Button>
+            <Button
+              variant={"link"}
+              onClick={() => setPrescriptionDrawer(true)}
+            >
+              Upload one?
+            </Button>
           </div>
         )}
 

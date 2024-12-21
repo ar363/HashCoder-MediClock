@@ -53,7 +53,7 @@ class PrescriptionAdmin(admin.ModelAdmin):
     list_filter = ["user"]
     fields = ["user", "view_image", "image", "notes"]
     readonly_fields = ["view_image"]
-    list_display = ["id", "user__first_name", "created_at", "notes"]
+    list_display = ["id", "patient_name", "created_at", "notes"]
 
     @admin.display(description="Prescription Image")
     def view_image(self, obj):
