@@ -36,7 +36,13 @@ import { formatRelative, format, parse as parseDate } from "date-fns";
 import { toast } from "sonner";
 import Fraction from "fraction.js";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  ButtonTabsTrigger,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 export default function Dashboard() {
@@ -45,6 +51,7 @@ export default function Dashboard() {
   const [needToFillDetails, setNeedToFillDetails] = useState(false);
   const [prescriptionDrawer, setPrescriptionDrawer] = useState(false);
   const [medicines, setMedicines] = useState<PrescribedDrug[]>([]);
+  const [tab, setTab] = useState("routine");
 
   const uploadPrescription = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -141,7 +148,7 @@ export default function Dashboard() {
           {greeting(getAuth().patient?.name || null)}
         </h1>
 
-        <Tabs defaultValue="routine">
+        <Tabs value={tab} onValueChange={(v) => setTab(v)}>
           <ScrollArea>
             <div className="w-full relative">
               <TabsList className="mb-6">
@@ -150,7 +157,16 @@ export default function Dashboard() {
                 <TabsTrigger value="prescriptions">Prescriptions</TabsTrigger>
                 <TabsTrigger value="order">Order</TabsTrigger>
                 <TabsTrigger value="orderhist">Past orders</TabsTrigger>
-                <TabsTrigger value="settings">Settings</TabsTrigger>
+                <TabsTrigger
+                  value="settings"
+                  onClick={() => {
+                    setTab("routine");
+                    setNeedToFillDetails(true);
+                  }}
+                  disabled={false}
+                >
+                  Settings
+                </TabsTrigger>
               </TabsList>
             </div>
             <ScrollBar orientation="horizontal" />
@@ -295,56 +311,6 @@ export default function Dashboard() {
               </Button>
             </div>
 
-            <Dialog open={needToFillDetails}>
-              <DialogContent>
-                <div className="mx-auto w-full">
-                  <DialogHeader>
-                    <DialogTitle>Please fill in some basic details</DialogTitle>
-                    <DialogDescription>
-                      We need to know about you to serve you better
-                    </DialogDescription>
-                    <form
-                      className="flex flex-col gap-4 text-left"
-                      onSubmit={submitDetails}
-                    >
-                      <div className="">
-                        <Label htmlFor="name">Name</Label>
-                        <Input type="text" id="name" name="name" />
-                      </div>
-                      <div className="">
-                        <Label htmlFor="breakfast_time">Breakfast time</Label>
-                        <Input
-                          type="time"
-                          id="breakfast_time"
-                          name="breakfast_time"
-                        />
-                      </div>
-                      <div className="">
-                        <Label htmlFor="lunch_time">Lunch time</Label>
-                        <Input type="time" id="lunch_time" name="lunch_time" />
-                      </div>
-                      <div className="">
-                        <Label htmlFor="dinner_time">Dinner time</Label>
-                        <Input
-                          type="time"
-                          id="dinner_time"
-                          name="dinner_time"
-                        />
-                      </div>
-                      <div className="">
-                        <Label htmlFor="address">Address</Label>
-                        <Textarea id="address" name="address" />
-                      </div>
-
-                      <Button className="mt-4" type="submit">
-                        Save
-                      </Button>
-                    </form>
-                  </DialogHeader>
-                </div>
-              </DialogContent>
-            </Dialog>
-
             {isLoaded && prescriptions && prescriptions.length === 0 && (
               <div className="mt-4 text-sm">
                 No prescriptions found.
@@ -417,6 +383,55 @@ export default function Dashboard() {
             <SkeletonCard />
           </div>
         )}
+
+        <Dialog
+          open={needToFillDetails}
+          onOpenChange={(op) => setNeedToFillDetails(op)}
+        >
+          <DialogContent>
+            <div className="mx-auto w-full">
+              <DialogHeader>
+                <DialogTitle>Please fill in some basic details</DialogTitle>
+                <DialogDescription>
+                  We need to know about you to serve you better
+                </DialogDescription>
+                <form
+                  className="flex flex-col gap-4 text-left"
+                  onSubmit={submitDetails}
+                >
+                  <div className="">
+                    <Label htmlFor="name">Name</Label>
+                    <Input type="text" id="name" name="name" />
+                  </div>
+                  <div className="">
+                    <Label htmlFor="breakfast_time">Breakfast time</Label>
+                    <Input
+                      type="time"
+                      id="breakfast_time"
+                      name="breakfast_time"
+                    />
+                  </div>
+                  <div className="">
+                    <Label htmlFor="lunch_time">Lunch time</Label>
+                    <Input type="time" id="lunch_time" name="lunch_time" />
+                  </div>
+                  <div className="">
+                    <Label htmlFor="dinner_time">Dinner time</Label>
+                    <Input type="time" id="dinner_time" name="dinner_time" />
+                  </div>
+                  <div className="">
+                    <Label htmlFor="address">Address</Label>
+                    <Textarea id="address" name="address" />
+                  </div>
+
+                  <Button className="mt-4" type="submit">
+                    Save
+                  </Button>
+                </form>
+              </DialogHeader>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         <Drawer onOpenChange={setPrescriptionDrawer} open={prescriptionDrawer}>
           <DrawerContent>
