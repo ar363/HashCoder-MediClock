@@ -36,6 +36,8 @@ import { formatRelative, format, parse as parseDate } from "date-fns";
 import { toast } from "sonner";
 import Fraction from "fraction.js";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 export default function Dashboard() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -138,8 +140,23 @@ export default function Dashboard() {
         <h1 className="italic mb-3 mt-2">
           {greeting(getAuth().patient?.name || null)}
         </h1>
-        {medicines.length > 0 && (
-          <>
+
+        <Tabs defaultValue="routine">
+          <ScrollArea>
+            <div className="w-full relative">
+              <TabsList className="mb-6">
+                <TabsTrigger value="routine">Routine</TabsTrigger>
+                <TabsTrigger value="medicines">Medicines</TabsTrigger>
+                <TabsTrigger value="prescriptions">Prescriptions</TabsTrigger>
+                <TabsTrigger value="order">Order</TabsTrigger>
+                <TabsTrigger value="orderhist">Past orders</TabsTrigger>
+                <TabsTrigger value="settings">Settings</TabsTrigger>
+              </TabsList>
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
+
+          <TabsContent value="routine">
             <div className="text-xl font-semibold mb-4">Your routine</div>
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
               <Card>
@@ -233,7 +250,8 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
             </div>
-
+          </TabsContent>
+          <TabsContent value="medicines">
             <div className="text-xl font-semibold mb-4">Your medicines</div>
 
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
@@ -265,113 +283,138 @@ export default function Dashboard() {
                 </Card>
               ))}
             </div>
-          </>
-        )}
-        <div className="flex justify-between items-center mb-4">
-          <div className="text-xl font-semibold">Your prescriptions</div>
-          <Button variant={"link"} onClick={() => setPrescriptionDrawer(true)}>
-            Add new +
-          </Button>
-        </div>
+          </TabsContent>
+          <TabsContent value="prescriptions">
+            <div className="flex justify-between items-center mb-4">
+              <div className="text-xl font-semibold">Your prescriptions</div>
+              <Button
+                variant={"link"}
+                onClick={() => setPrescriptionDrawer(true)}
+              >
+                Add new +
+              </Button>
+            </div>
+
+            <Dialog open={needToFillDetails}>
+              <DialogContent>
+                <div className="mx-auto w-full">
+                  <DialogHeader>
+                    <DialogTitle>Please fill in some basic details</DialogTitle>
+                    <DialogDescription>
+                      We need to know about you to serve you better
+                    </DialogDescription>
+                    <form
+                      className="flex flex-col gap-4 text-left"
+                      onSubmit={submitDetails}
+                    >
+                      <div className="">
+                        <Label htmlFor="name">Name</Label>
+                        <Input type="text" id="name" name="name" />
+                      </div>
+                      <div className="">
+                        <Label htmlFor="breakfast_time">Breakfast time</Label>
+                        <Input
+                          type="time"
+                          id="breakfast_time"
+                          name="breakfast_time"
+                        />
+                      </div>
+                      <div className="">
+                        <Label htmlFor="lunch_time">Lunch time</Label>
+                        <Input type="time" id="lunch_time" name="lunch_time" />
+                      </div>
+                      <div className="">
+                        <Label htmlFor="dinner_time">Dinner time</Label>
+                        <Input
+                          type="time"
+                          id="dinner_time"
+                          name="dinner_time"
+                        />
+                      </div>
+                      <div className="">
+                        <Label htmlFor="address">Address</Label>
+                        <Textarea id="address" name="address" />
+                      </div>
+
+                      <Button className="mt-4" type="submit">
+                        Save
+                      </Button>
+                    </form>
+                  </DialogHeader>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {isLoaded && prescriptions && prescriptions.length === 0 && (
+              <div className="mt-4 text-sm">
+                No prescriptions found.
+                <Button
+                  variant={"link"}
+                  onClick={() => setPrescriptionDrawer(true)}
+                >
+                  Upload one?
+                </Button>
+              </div>
+            )}
+
+            {prescriptions && prescriptions.length > 0 && (
+              <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+                {prescriptions.map((prescription) => (
+                  <Card key={prescription.id}>
+                    <CardHeader>
+                      <CardDescription>
+                        {formatRelative(prescription.created_at, new Date())}
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <a
+                        href={`http://${location.hostname}:8000${prescription.image}`}
+                        target="_blank"
+                      >
+                        <img
+                          src={`http://${location.hostname}:8000${prescription.image}`}
+                          className="h-[180px] object-cover w-full rounded-sm"
+                        />
+                      </a>
+                    </CardContent>
+                    <CardFooter className="-mt-3">
+                      {prescription.drugs.length === 0 ? (
+                        <p className="italic text-gray-600 text-sm">
+                          Processing...
+                        </p>
+                      ) : (
+                        <p className="italic text-emerald-600 text-sm">
+                          Processed!
+                        </p>
+                      )}
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+          <TabsContent value="order">
+            <div className="text-xl font-semibold mb-4">Order medicines</div>
+
+            {medicines.map((m) => (
+              <div key={m.id} className="flex gap-4 items-center mt-4">
+                {m.drug} <br />
+                {m.drug_info.pack_size} <br />
+                <span className="bg-rose-100 dark:bg-rose-950 text-rose-950 dark:text-rose-50 py-1 px-3 rounded-full text-sm">
+                  {m.morning_qty + m.afternoon_qty + m.night_qty}{" "}
+                  {m.drug_info.singular_term}s remaining
+                </span>
+              </div>
+            ))}
+          </TabsContent>
+        </Tabs>
+        {medicines.length > 0 && <></>}
+
         {!isLoaded && (
           <div className="flex gap-4 mt-4 flex-col sm:flex-row">
             <SkeletonCard />
             <SkeletonCard />
             <SkeletonCard />
-          </div>
-        )}
-
-        <Dialog open={needToFillDetails}>
-          <DialogContent>
-            <div className="mx-auto w-full">
-              <DialogHeader>
-                <DialogTitle>Please fill in some basic details</DialogTitle>
-                <DialogDescription>
-                  We need to know about you to serve you better
-                </DialogDescription>
-                <form
-                  className="flex flex-col gap-4 text-left"
-                  onSubmit={submitDetails}
-                >
-                  <div className="">
-                    <Label htmlFor="name">Name</Label>
-                    <Input type="text" id="name" name="name" />
-                  </div>
-                  <div className="">
-                    <Label htmlFor="breakfast_time">Breakfast time</Label>
-                    <Input
-                      type="time"
-                      id="breakfast_time"
-                      name="breakfast_time"
-                    />
-                  </div>
-                  <div className="">
-                    <Label htmlFor="lunch_time">Lunch time</Label>
-                    <Input type="time" id="lunch_time" name="lunch_time" />
-                  </div>
-                  <div className="">
-                    <Label htmlFor="dinner_time">Dinner time</Label>
-                    <Input type="time" id="dinner_time" name="dinner_time" />
-                  </div>
-                  <div className="">
-                    <Label htmlFor="address">Address</Label>
-                    <Textarea id="address" name="address" />
-                  </div>
-
-                  <Button className="mt-4" type="submit">
-                    Save
-                  </Button>
-                </form>
-              </DialogHeader>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {isLoaded && prescriptions && prescriptions.length === 0 && (
-          <div className="mt-4 text-sm">
-            No prescriptions found.
-            <Button
-              variant={"link"}
-              onClick={() => setPrescriptionDrawer(true)}
-            >
-              Upload one?
-            </Button>
-          </div>
-        )}
-
-        {prescriptions && prescriptions.length > 0 && (
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
-            {prescriptions.map((prescription) => (
-              <Card key={prescription.id}>
-                <CardHeader>
-                  <CardDescription>
-                    {formatRelative(prescription.created_at, new Date())}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <a
-                    href={`http://${location.hostname}:8000${prescription.image}`}
-                    target="_blank"
-                  >
-                    <img
-                      src={`http://${location.hostname}:8000${prescription.image}`}
-                      className="h-[180px] object-cover w-full rounded-sm"
-                    />
-                  </a>
-                </CardContent>
-                <CardFooter className="-mt-3">
-                  {prescription.drugs.length === 0 ? (
-                    <p className="italic text-gray-600 text-sm">
-                      Processing...
-                    </p>
-                  ) : (
-                    <p className="italic text-emerald-600 text-sm">
-                      Processed!
-                    </p>
-                  )}
-                </CardFooter>
-              </Card>
-            ))}
           </div>
         )}
 
