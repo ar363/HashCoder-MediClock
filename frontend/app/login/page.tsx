@@ -51,7 +51,7 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 grid items-center">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 grid items-center">
       <div className="mx-auto p-4 max-w-sm w-full">
         <div className="flex flex-col gap-6">
           <Card>

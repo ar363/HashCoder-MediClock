@@ -5,8 +5,8 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="p-8 mx-auto text-gray-900 flex flex-col sm:flex-row items-center justify-center gap-8">
+    <div className="bg-gray-50 dark:bg-gray-950 min-h-screen">
+      <div className="p-8 mx-auto text-gray-900 dark:text-white flex flex-col sm:flex-row items-center justify-center gap-8">
         <div className="">
           <svg
             xmlns="http://www.w3.org/2000/svg"

@@ -127,7 +127,7 @@ export default function Dashboard() {
   }, [prescriptions]);
 
   return (
-    <div className="min-h-screen bg-gray-50 text-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white">
       <div className="mx-auto p-4 max-w-screen-lg w-full">
         <h1 className="italic mb-3 mt-2">
           {greeting(getAuth().patient?.name || null)}
@@ -154,19 +154,19 @@ export default function Dashboard() {
                       </p>
                     ) : (
                       <div className="flex gap-2">
-                        <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 rounded-full">
+                        <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 dark:bg-gray-950 rounded-full">
                           <div className="text-xs text-rose-500">Morning</div>
                           <div className="">
                             {new Fraction(m.morning_qty).toFraction()}
                           </div>
                         </div>
-                        <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 rounded-full">
+                        <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 dark:bg-gray-950 rounded-full">
                           <div className="text-xs text-rose-500">Afternoon</div>
                           <div className="">
                             {new Fraction(m.afternoon_qty).toFraction()}
                           </div>
                         </div>
-                        <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 rounded-full">
+                        <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 dark:bg-gray-950 rounded-full">
                           <div className="text-xs text-rose-500">Night</div>
                           <div className="">
                             {new Fraction(m.night_qty).toFraction()}
