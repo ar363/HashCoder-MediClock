@@ -28,12 +28,33 @@ class Drug(models.Model):
     price = models.FloatField()
     manufacturer = models.CharField(max_length=500)
 
+    def get_sterm(self):
+        x = self.pack_size.split(" ")[0]
+        if x == "strip":
+            return "tablet"
+        if x == "vial":
+            return "vial"
+        if x == "bottle":
+            return "ml"
+        return x
+
+    def total_quantity(self):
+        x = self.pack_size.split(" ")[0]
+        if x == "strip" and self.pack_size.split(" ")[2].isdigit():
+            return int(self.pack_size.split(" ")[2])
+        if x == "vial":
+            return 1
+        if x == "bottle":
+            return int(self.pack_size.split(" ")[2])
+        return 1
+
     def as_dict(self):
         return {
             "id": self.id,
             "pack_size": self.pack_size,
             "price": self.price,
             "manufacturer": self.manufacturer,
+            "singular_term": self.get_sterm(),
         }
 
     def __str__(self):
@@ -47,10 +68,13 @@ class PrescribedDrug(models.Model):
     afternoon_qty = models.FloatField(default=0)
     night_qty = models.FloatField(default=0)
     custom_qty = models.FloatField(
-        verbose_name="Custom qty (if applicable)", blank=True, null=True
+        verbose_name="Custom qty (if applicable)", blank=True, null=True, editable=False
     )
     custom_time = models.TimeField(
-        verbose_name="Custom time (if applicable)", blank=True, null=True
+        verbose_name="Custom time (if applicable)",
+        blank=True,
+        null=True,
+        editable=False,
     )
     amt_remaining = models.FloatField(default=0, editable=False)
 
@@ -96,7 +120,7 @@ class Prescription(models.Model):
         if self.user.patient:
             return self.user.patient.name
         else:
-            return '-'
+            return "-"
 
     def __str__(self):
         return f'Prescription for {self.user.username} - {self.created_at.strftime("%d-%m-%Y %H:%M:%S")}'

@@ -32,9 +32,10 @@ import { getAuth, greeting, setAuth } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { formatRelative } from "date-fns";
+import { formatRelative, format, parse as parseDate } from "date-fns";
 import { toast } from "sonner";
 import Fraction from "fraction.js";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function Dashboard() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -117,10 +118,15 @@ export default function Dashboard() {
             med.morning_qty += d.morning_qty;
             med.afternoon_qty += d.afternoon_qty;
             med.night_qty += d.night_qty;
-            med.custom_qty += d.custom_qty;
           }
         }
       });
+    });
+
+    meds.map((m) => {
+      m.aqfrac = new Fraction(m.afternoon_qty).toFraction();
+      m.mqfrac = new Fraction(m.morning_qty).toFraction();
+      m.nqfrac = new Fraction(m.night_qty).toFraction();
     });
 
     setMedicines(meds);
@@ -134,6 +140,100 @@ export default function Dashboard() {
         </h1>
         {medicines.length > 0 && (
           <>
+            <div className="text-xl font-semibold mb-4">Your routine</div>
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Morning</CardTitle>
+                  <CardDescription>
+                    {format(
+                      parseDate(
+                        getAuth().patient?.breakfast_time || "00:00:00",
+                        "HH:mm:ss",
+                        new Date()
+                      ),
+                      "HH:mm aaaa"
+                    )}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {medicines
+                    .filter((m) => m.morning_qty > 0)
+                    .map((m) => (
+                      <div className="flex items-center mb-4 gap-3" key={m.id}>
+                        <Checkbox id={"cbdone_morn" + m.id} />
+                        <label htmlFor={"cbdone_morn" + m.id}>
+                          {m.drug} <br />
+                          <span className="bg-rose-100 dark:bg-rose-950 text-rose-950 dark:text-rose-50 py-1 px-3 rounded-full text-sm">
+                            {m.mqfrac} {m.drug_info.singular_term}
+                          </span>
+                        </label>
+                      </div>
+                    ))}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Afternoon</CardTitle>
+                  <CardDescription>
+                    {format(
+                      parseDate(
+                        getAuth().patient?.lunch_time || "00:00:00",
+                        "HH:mm:ss",
+                        new Date()
+                      ),
+                      "HH:mm aaaa"
+                    )}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {medicines
+                    .filter((m) => m.afternoon_qty > 0)
+                    .map((m) => (
+                      <div className="flex items-center mb-4 gap-3" key={m.id}>
+                        <Checkbox id={"cbdone_aft" + m.id} />
+                        <label htmlFor={"cbdone_aft" + m.id}>
+                          {m.drug} <br />
+                          <span className="bg-rose-100 dark:bg-rose-950 text-rose-950 dark:text-rose-50 py-1 px-3 rounded-full text-sm">
+                            {m.aqfrac} {m.drug_info.singular_term}
+                          </span>
+                        </label>
+                      </div>
+                    ))}
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Night</CardTitle>
+                  <CardDescription>
+                    {format(
+                      parseDate(
+                        getAuth().patient?.dinner_time || "00:00:00",
+                        "HH:mm:ss",
+                        new Date()
+                      ),
+                      "HH:mm aaaa"
+                    )}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {medicines
+                    .filter((m) => m.night_qty > 0)
+                    .map((m) => (
+                      <div className="flex items-center mb-4 gap-3" key={m.id}>
+                        <Checkbox id={"cbdone_eve" + m.id} />
+                        <label htmlFor={"cbdone_eve" + m.id}>
+                          {m.drug} <br />
+                          <span className="bg-rose-100 dark:bg-rose-950 text-rose-950 dark:text-rose-50 py-1 px-3 rounded-full text-sm">
+                            {m.nqfrac} {m.drug_info.singular_term}
+                          </span>
+                        </label>
+                      </div>
+                    ))}
+                </CardContent>
+              </Card>
+            </div>
+
             <div className="text-xl font-semibold mb-4">Your medicines</div>
 
             <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
@@ -147,33 +247,20 @@ export default function Dashboard() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="-mt-3">
-                    {m.custom_qty > 0 ? (
-                      <p>
-                        {new Fraction(m.custom_qty).toFraction()} at{" "}
-                        {m.custom_time}
-                      </p>
-                    ) : (
-                      <div className="flex gap-2">
-                        <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 dark:bg-gray-950 rounded-full">
-                          <div className="text-xs text-rose-500">Morning</div>
-                          <div className="">
-                            {new Fraction(m.morning_qty).toFraction()}
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 dark:bg-gray-950 rounded-full">
-                          <div className="text-xs text-rose-500">Afternoon</div>
-                          <div className="">
-                            {new Fraction(m.afternoon_qty).toFraction()}
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 dark:bg-gray-950 rounded-full">
-                          <div className="text-xs text-rose-500">Night</div>
-                          <div className="">
-                            {new Fraction(m.night_qty).toFraction()}
-                          </div>
-                        </div>
+                    <div className="flex gap-2">
+                      <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 dark:bg-gray-950 rounded-full">
+                        <div className="text-xs text-rose-500">Morning</div>
+                        <div className="">{m.mqfrac}</div>
                       </div>
-                    )}
+                      <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 dark:bg-gray-950 rounded-full">
+                        <div className="text-xs text-rose-500">Afternoon</div>
+                        <div className="">{m.aqfrac}</div>
+                      </div>
+                      <div className="flex flex-col items-center justify-center p-2 w-full bg-gray-50 dark:bg-gray-950 rounded-full">
+                        <div className="text-xs text-rose-500">Night</div>
+                        <div className="">{m.nqfrac}</div>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               ))}

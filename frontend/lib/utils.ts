@@ -16,9 +16,6 @@ export function getAuth(): {
     address: string;
   } | null;
 } {
-  if (typeof window === "undefined") {
-    return { token: "", userid: "", patient: null };
-  }
 
   let mtp;
   try {

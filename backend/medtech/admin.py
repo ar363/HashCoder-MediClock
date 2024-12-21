@@ -17,12 +17,13 @@ admin.site.index_title = "Welcome to MedTech Admin"
 
 @admin.register(Patient)
 class PatientAdmin(admin.ModelAdmin):
-    pass
+    list_display = ["name"]
 
 
 @admin.register(Drug)
 class DrugAdmin(admin.ModelAdmin):
     search_fields = ["name"]
+    list_display = ["name", "pack_size", "price", "manufacturer"]
 
 
 @admin.register(PrescribedDrug)
