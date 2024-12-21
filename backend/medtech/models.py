@@ -5,8 +5,6 @@ from django.contrib.auth.models import User
 
 class Patient(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="patient")
-    wake_up_time = models.TimeField()
-    sleep_time = models.TimeField()
     breakfast_time = models.TimeField()
     lunch_time = models.TimeField()
     dinner_time = models.TimeField()
@@ -15,8 +13,6 @@ class Patient(models.Model):
     def as_dict(self):
         return {
             "id": self.id,
-            "wake_up_time": self.wake_up_time,
-            "sleep_time": self.sleep_time,
             "breakfast_time": self.breakfast_time,
             "lunch_time": self.lunch_time,
             "dinner_time": self.dinner_time,

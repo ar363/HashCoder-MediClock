@@ -12,11 +12,18 @@ export function getAuth() {
   } catch (e) {
     mtp = {};
   }
-  return {
+
+  const toSend = {
     token: localStorage.getItem("medtechtoken"),
     userid: localStorage.getItem("medtechuserid"),
     patient: mtp,
   };
+
+  if (!toSend.token || !toSend.userid) {
+    return { token: "", userid: "", patient: {} };
+  }
+
+  return toSend;
 }
 
 export function setAuth(uid: number, utoken: string, upatient: object | null) {

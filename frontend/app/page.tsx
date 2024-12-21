@@ -1,4 +1,6 @@
+"use client";
 import { Button } from "@/components/ui/button";
+import { getAuth } from "@/lib/utils";
 import Link from "next/link";
 
 export default function Home() {
@@ -24,14 +26,22 @@ export default function Home() {
             Track medicines, prescriptions, automatic ordering and more...
           </p>
 
-          <div className="flex mt-4 gap-4">
-            <Button asChild>
-              <Link href={"/login?signup=1"}>Sign Up</Link>
-            </Button>
-            <Button variant={"outline"} asChild>
-              <Link href={"/login"}>Log In</Link>
-            </Button>
-          </div>
+          {!getAuth().token ? (
+            <div className="flex mt-4 gap-4">
+              <Button asChild>
+                <Link href={"/login?signup=1"}>Sign Up</Link>
+              </Button>
+              <Button variant={"outline"} asChild>
+                <Link href={"/login"}>Log In</Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="mt-4">
+              <Button asChild>
+                <Link href={"/dashboard"}>Go to Dashboard</Link>
+              </Button>
+            </div>
+          )}
         </div>
         <div className="flex justify-center mt-8">
           <div className="max-w-[500px] p-8 rounded-lg">

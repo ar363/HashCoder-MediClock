@@ -67,7 +67,7 @@ def prescriptions(request):
             request, {"error": "Patient not found", "pdatafill": True}, status=200
         )
 
-    prescriptions = models.Prescription.objects.filter(patient=patient)
+    prescriptions = models.Prescription.objects.filter(user=u)
     return [p.as_dict() for p in prescriptions]
 
 
@@ -77,9 +77,33 @@ def new_prescription(request, file: UploadedFile):
     if not u:
         return api.create_response(request, {"error": "User not found"}, status=200)
 
-    # data.patient = patient
-    # data.save()
-    # return data.as_dict()
-    models.Prescription.objects.create(user=u, image=file)
+    p = models.Prescription.objects.create(user=u, image=file)
 
-    return {"o": 1}
+    return p.as_dict()
+
+
+class PatientUpdateSchema(Schema):
+    breakfast_time: str
+    lunch_time: str
+    dinner_time: str
+    address: str
+
+
+@api.post("/patient", auth=auth)
+def patient_update(request, data: PatientUpdateSchema):
+    u = User.objects.filter(id=request.auth).first()
+    if not u:
+        return api.create_response(request, {"error": "User not found"}, status=200)
+
+    patient = models.Patient.objects.filter(user=u).first()
+    if not patient:
+        patient = models.Patient()
+        patient.user = u
+
+    patient.breakfast_time = data.breakfast_time
+    patient.lunch_time = data.lunch_time
+    patient.dinner_time = data.dinner_time
+    patient.address = data.address
+    patient.save()
+
+    return patient.as_dict()
