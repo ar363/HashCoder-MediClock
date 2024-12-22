@@ -139,7 +139,7 @@ class Delivery(models.Model):
             "id": self.id,
             "created_at": self.created_at,
             "status": self.status,
-            "drugs": [d.as_dict() for d in self.delivereddrug_set.all()],
+            # "drugs": [d.as_dict() for d in self.delivereddrug_set.all()],
         }
 
     class Meta:

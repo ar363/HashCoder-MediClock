@@ -64,7 +64,6 @@ export default function Dashboard() {
     { drugid: number; qty: number }[]
   >([]);
   const [daysToTake, setDaysToTake] = useState(0);
-  const [orders, setOrders] = useState<Order[]>([]);
 
   const uploadPrescription = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -206,15 +205,6 @@ export default function Dashboard() {
         setRoutines(data.routines);
       });
 
-    fetch(`http://${location.hostname}:8000/api/orders`, {
-      headers: {
-        Authorization: `Bearer ${getAuth().token}`,
-      },
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setOrders(data.orders);
-      });
   }, []);
 
   useEffect(() => {
