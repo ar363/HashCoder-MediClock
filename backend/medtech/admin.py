@@ -8,6 +8,7 @@ from .models import (
     DeliveredDrug,
     Delivery,
     Prescription,
+    Routine,
 )
 
 admin.site.site_header = "MedTech Admin"
@@ -28,7 +29,15 @@ class DrugAdmin(admin.ModelAdmin):
 
 @admin.register(PrescribedDrug)
 class PrescribedDrugAdmin(admin.ModelAdmin):
-    pass
+    list_display = [
+        "drug",
+        "patient_name",
+        "morning_qty",
+        "afternoon_qty",
+        "night_qty",
+        "prescription__created_at",
+    ]
+    autocomplete_fields = ["drug", "prescription"]
 
 
 @admin.register(DeliveredDrug)
@@ -65,3 +74,9 @@ class PrescriptionAdmin(admin.ModelAdmin):
 
     class Media:
         css = {"all": ["/static/adm.css"]}
+
+
+@admin.register(Routine)
+class RoutineAdmin(admin.ModelAdmin):
+    list_display = ["patient_name", "drug", "date", "rtime", "taken"]
+    autocomplete_fields = ["drug"]

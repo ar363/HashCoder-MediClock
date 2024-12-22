@@ -78,6 +78,12 @@ class PrescribedDrug(models.Model):
     )
     amt_remaining = models.FloatField(default=0, editable=False)
 
+    def patient_name(self):
+        if self.prescription.user.patient:
+            return self.prescription.user.patient.name
+        else:
+            return "-"
+
     def as_dict(self):
         return {
             "id": self.id,
@@ -98,6 +104,10 @@ class DeliveredDrug(models.Model):
     qty = models.FloatField()
     delivered_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        verbose_name = "Order Item"
+        verbose_name_plural = "Order Items"
+
 
 class Delivery(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -105,8 +115,8 @@ class Delivery(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = "Delivery"
-        verbose_name_plural = "Deliveries"
+        verbose_name = "Order"
+        verbose_name_plural = "Orders"
 
 
 class Prescription(models.Model):
@@ -144,6 +154,19 @@ class Routine(models.Model):
     date = models.DateField()
     time = models.CharField(max_length=10)
     taken = models.BooleanField(default=False)
+
+    def patient_name(self):
+        if self.user.patient:
+            return self.user.patient.name
+        else:
+            return "-"
+
+    def rtime(self):
+        if self.time == "morn":
+            return "Morning"
+        if self.time == "aft":
+            return "Afternoon"
+        return "Night"
 
     def as_dict(self):
         return {

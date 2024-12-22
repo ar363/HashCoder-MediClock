@@ -134,6 +134,8 @@ export default function Dashboard() {
       .then((data) => {});
   };
 
+  const orderPrescription = (prescription: Prescription) => {};
+
   useEffect(() => {
     fetch(`http://${location.hostname}:8000/api/prescriptions`, {
       headers: {
@@ -434,9 +436,13 @@ export default function Dashboard() {
                           Processing...
                         </p>
                       ) : (
-                        <p className="italic text-emerald-600 text-sm">
-                          Processed!
-                        </p>
+                        <Button
+                          onClick={() => orderPrescription(prescription)}
+                          size={"sm"}
+                          className="w-full"
+                        >
+                          Order medicines
+                        </Button>
                       )}
                     </CardFooter>
                   </Card>
