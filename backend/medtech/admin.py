@@ -13,7 +13,7 @@ from .models import (
 
 admin.site.site_header = "MedTech Admin"
 admin.site.site_title = "MedTech Admin"
-admin.site.index_title = "Welcome to MedTech Admin"
+admin.site.index_title = "MedTech Admin"
 
 
 @admin.register(Patient)
