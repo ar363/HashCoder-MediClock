@@ -134,6 +134,12 @@ class Delivery(models.Model):
         default="open",
     )
 
+    def patient_name(self):
+        if self.user.patient:
+            return self.user.patient.name
+        else:
+            return "-"
+
     def as_dict(self):
         return {
             "id": self.id,

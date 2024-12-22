@@ -44,10 +44,15 @@ class PrescribedDrugAdmin(admin.ModelAdmin):
 class DeliveredDrugAdmin(admin.ModelAdmin):
     pass
 
+class DeliveredDrugInline(admin.TabularInline):
+    model = DeliveredDrug
+    extra = 0
+    autocomplete_fields = ["drug"]
 
 @admin.register(Delivery)
 class DeliveryAdmin(admin.ModelAdmin):
-    pass
+    list_display = ["patient_name", "status"]
+    inlines = [DeliveredDrugInline]
 
 
 class PrescribedDrugInline(admin.TabularInline):
