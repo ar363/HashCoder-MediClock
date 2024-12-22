@@ -11,9 +11,9 @@ from .models import (
     Routine,
 )
 
-admin.site.site_header = "MedTech Admin"
-admin.site.site_title = "MedTech Admin"
-admin.site.index_title = "MedTech Admin"
+admin.site.site_header = "MediClock Admin"
+admin.site.site_title = "MediClock Admin"
+admin.site.index_title = "MediClock Admin"
 
 
 @admin.register(Patient)

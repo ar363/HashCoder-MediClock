@@ -13,6 +13,11 @@ tasks:
       - npm run dev
     desc: Run Nextjs development server
 
+  scheduler:
+    dir: backend
+    cmds:
+      - python3 scheduler.py
+
   dev:
     cmds:
       - task -p djdev uidev

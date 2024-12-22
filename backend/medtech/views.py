@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from django.conf import settings
 from . import models
 from datetime import datetime
+import json
 
 api = NinjaAPI(title="MedTech API", version="1.0.0")
 
@@ -154,3 +155,30 @@ def routine_get(request):
 
     routines = models.Routine.objects.filter(user=u, date=datetime.now().date())
     return {"routines": [r.as_dict() for r in routines]}
+
+
+@api.get("/orders", auth=auth)
+def orders(request):
+    u = User.objects.filter(id=request.auth).first()
+    if not u:
+        return api.create_response(request, {"error": "User not found"}, status=200)
+
+    orders = models.Delivery.objects.filter(user=u)
+    return {"orders": [o.as_dict() for o in orders]}
+
+
+@api.post("/order", auth=auth)
+def order_place(request):
+    u = User.objects.filter(id=request.auth).first()
+    if not u:
+        return api.create_response(request, {"error": "User not found"}, status=200)
+
+    order = models.Delivery.objects.create(user=u)
+
+    jdrugs = json.loads(request.body)
+    for j in jdrugs["drugs"]:
+        models.DeliveredDrug.objects.create(
+            delivery=order, drug_id=j["drugid"], qty=j["qty"]
+        )
+
+    return order.as_dict()

@@ -39,6 +39,15 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { time } from "console";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function Dashboard() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -48,6 +57,14 @@ export default function Dashboard() {
   const [medicines, setMedicines] = useState<PrescribedDrug[]>([]);
   const [tab, setTab] = useState("routine");
   const [routines, setRoutines] = useState<Routine[]>([]);
+  const [isOrderingMedicine, setIsOrderingMedicine] = useState<boolean>(false);
+  const [currentOrderingPrescription, setCurrentOrderingPrescription] =
+    useState<OrderPrescription | null>(null);
+  const [orderDrugQty, setOrderDrugQty] = useState<
+    { drugid: number; qty: number }[]
+  >([]);
+  const [daysToTake, setDaysToTake] = useState(0);
+  const [orders, setOrders] = useState<Order[]>([]);
 
   const uploadPrescription = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -134,7 +151,30 @@ export default function Dashboard() {
       .then((data) => {});
   };
 
-  const orderPrescription = (prescription: Prescription) => {};
+  const orderPrescription = (prescription: Prescription) => {
+    setIsOrderingMedicine(true);
+    setCurrentOrderingPrescription(prescription);
+  };
+
+  const placeOrder = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    fetch(`http://${location.hostname}:8000/api/order`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${getAuth().token}`,
+      },
+      body: JSON.stringify({
+        drugs: orderDrugQty,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        toast.success("Order placed!");
+        setOrders((prev) => [data, ...prev]);
+        setTab("orderhist");
+      });
+  };
 
   useEffect(() => {
     fetch(`http://${location.hostname}:8000/api/prescriptions`, {
@@ -165,6 +205,16 @@ export default function Dashboard() {
       .then((data) => {
         setRoutines(data.routines);
       });
+
+    fetch(`http://${location.hostname}:8000/api/orders`, {
+      headers: {
+        Authorization: `Bearer ${getAuth().token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setOrders(data.orders);
+      });
   }, []);
 
   useEffect(() => {
@@ -193,6 +243,24 @@ export default function Dashboard() {
     setMedicines(meds);
   }, [prescriptions]);
 
+  useEffect(() => {
+    if (currentOrderingPrescription) {
+      const odq: {
+        drugid: number;
+        qty: number;
+      }[] = [];
+      currentOrderingPrescription.drugs.map((d) => {
+        odq.push({
+          drugid: d.drug_info.id,
+          qty: Math.ceil(
+            (d.morning_qty + d.afternoon_qty + d.night_qty) * daysToTake
+          ),
+        });
+      });
+      setOrderDrugQty(odq);
+    }
+  }, [currentOrderingPrescription, daysToTake]);
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-white">
       <div className="mx-auto p-4 max-w-screen-lg w-full">
@@ -207,7 +275,6 @@ export default function Dashboard() {
                 <TabsTrigger value="routine">Routine</TabsTrigger>
                 <TabsTrigger value="medicines">Medicines</TabsTrigger>
                 <TabsTrigger value="prescriptions">Prescriptions</TabsTrigger>
-                <TabsTrigger value="orderhist">Orders</TabsTrigger>
                 <TabsTrigger
                   value="settings"
                   onClick={() => {
@@ -520,6 +587,83 @@ export default function Dashboard() {
             </div>
           </DialogContent>
         </Dialog>
+
+        <Drawer onOpenChange={setIsOrderingMedicine} open={isOrderingMedicine}>
+          <DrawerContent>
+            <div className="mx-auto w-full max-w-md py-8">
+              <DrawerHeader>
+                <DrawerTitle>Order medicine</DrawerTitle>
+                <form className="mt-4" onSubmit={placeOrder}>
+                  <Label htmlFor="days_to_order">
+                    How many days to order for?
+                  </Label>
+                  <Input
+                    type="number"
+                    value={daysToTake}
+                    onChange={(e) =>
+                      setDaysToTake(Number(e.target.value || "0"))
+                    }
+                    id="days_to_order"
+                    name="days_to_order"
+                  />
+
+                  <Table className="mt-4">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Qty</TableHead>
+                        <TableHead>Price</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {currentOrderingPrescription?.drugs.map((d) => (
+                        <TableRow key={d.id}>
+                          <TableCell>{d.drug}</TableCell>
+                          <TableCell>
+                            <Input
+                              className="max-w-24"
+                              type="number"
+                              name={`drug_` + d.drug_info.id + "_qty"}
+                              value={
+                                orderDrugQty.find(
+                                  (x) => x.drugid == d.drug_info.id
+                                )?.qty
+                              }
+                              onInput={(e) => {
+                                setOrderDrugQty([
+                                  ...orderDrugQty.filter(
+                                    (x) => x.drugid !== d.drug_info.id
+                                  ),
+                                  {
+                                    drugid: d.drug_info.id,
+                                    qty: Number(e.target.value),
+                                  },
+                                ]);
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            {typeof orderDrugQty.find(
+                              (x) => x.drugid == d.drug_info.id
+                            )?.qty !== "undefined"
+                              ? //@ts-ignore
+                                orderDrugQty.find(
+                                  (x) => x.drugid == d.drug_info.id
+                                )?.qty * d.drug_info.price
+                              : 0}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  <Button className="w-full mt-4" type="submit">
+                    Order
+                  </Button>
+                </form>
+              </DrawerHeader>
+            </div>
+          </DrawerContent>
+        </Drawer>
 
         <Drawer onOpenChange={setPrescriptionDrawer} open={prescriptionDrawer}>
           <DrawerContent>

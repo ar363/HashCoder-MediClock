@@ -100,9 +100,20 @@ class PrescribedDrug(models.Model):
 
 class DeliveredDrug(models.Model):
     drug = models.ForeignKey(Drug, on_delete=models.CASCADE)
-    delivery = models.ForeignKey("Delivery", on_delete=models.CASCADE)
+    delivery = models.ForeignKey(
+        "Delivery", on_delete=models.CASCADE, related_name="all_drugs"
+    )
     qty = models.FloatField()
     delivered_at = models.DateTimeField(auto_now_add=True)
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "drug": self.drug.name,
+            "drug_info": self.drug.as_dict(),
+            "qty": self.qty,
+            "delivered_at": self.delivered_at,
+        }
 
     class Meta:
         verbose_name = "Order Item"
@@ -113,6 +124,23 @@ class Delivery(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     drugs = models.ManyToManyField(Drug, through="DeliveredDrug")
     created_at = models.DateTimeField(auto_now_add=True)
+    status = models.CharField(
+        max_length=20,
+        choices=[
+            ("open", "Order Recieved"),
+            ("out_for_delivery", "Out for delivery"),
+            ("delivered", "Delivered"),
+        ],
+        default="open",
+    )
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "created_at": self.created_at,
+            "status": self.status,
+            "drugs": [d.as_dict() for d in self.delivereddrug_set.all()],
+        }
 
     class Meta:
         verbose_name = "Order"
