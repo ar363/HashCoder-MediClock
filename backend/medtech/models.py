@@ -136,3 +136,18 @@ class Prescription(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+
+class Routine(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    drug = models.ForeignKey(Drug, on_delete=models.CASCADE)
+    date = models.DateField()
+    time = models.CharField(max_length=10)
+    taken = models.BooleanField(default=False)
+
+    def as_dict(self):
+        return {
+            "drug_id": self.drug.id,
+            "time": self.time,
+            "taken": self.taken,
+        }

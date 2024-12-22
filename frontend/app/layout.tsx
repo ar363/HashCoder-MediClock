@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { useTheme } from "next-themes";
 import DarkModeToggle from "@/components/darkmode-toggle";
+import LogoutBtn from "@/components/logoutbtn";
 
 const font = Geist();
 
@@ -24,6 +25,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <DarkModeToggle />
+          <LogoutBtn />
           {children}
           <Toaster
             richColors

@@ -36,14 +36,9 @@ import { formatRelative, format, parse as parseDate } from "date-fns";
 import { toast } from "sonner";
 import Fraction from "fraction.js";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  ButtonTabsTrigger,
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { time } from "console";
 
 export default function Dashboard() {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -52,6 +47,7 @@ export default function Dashboard() {
   const [prescriptionDrawer, setPrescriptionDrawer] = useState(false);
   const [medicines, setMedicines] = useState<PrescribedDrug[]>([]);
   const [tab, setTab] = useState("routine");
+  const [routines, setRoutines] = useState<Routine[]>([]);
 
   const uploadPrescription = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -118,6 +114,26 @@ export default function Dashboard() {
       });
   };
 
+  const routineSetDone = (
+    id: number,
+    time: "morn" | "aft" | "eve",
+    e: boolean
+  ) => {
+    fetch(`http://${location.hostname}:8000/api/patient/routine`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${getAuth().token}`,
+      },
+      body: JSON.stringify({
+        drug_id: id,
+        time,
+        done: e,
+      }),
+    })
+      .then((res) => res.json())
+      .then((data) => {});
+  };
+
   useEffect(() => {
     fetch(`http://${location.hostname}:8000/api/prescriptions`, {
       headers: {
@@ -136,6 +152,16 @@ export default function Dashboard() {
             data.currentpdata
           );
         }
+      });
+
+    fetch(`http://${location.hostname}:8000/api/patient/routine`, {
+      headers: {
+        Authorization: `Bearer ${getAuth().token}`,
+      },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setRoutines(data.routines);
       });
   }, []);
 
@@ -179,8 +205,7 @@ export default function Dashboard() {
                 <TabsTrigger value="routine">Routine</TabsTrigger>
                 <TabsTrigger value="medicines">Medicines</TabsTrigger>
                 <TabsTrigger value="prescriptions">Prescriptions</TabsTrigger>
-                <TabsTrigger value="order">Order</TabsTrigger>
-                <TabsTrigger value="orderhist">Past orders</TabsTrigger>
+                <TabsTrigger value="orderhist">Orders</TabsTrigger>
                 <TabsTrigger
                   value="settings"
                   onClick={() => {
@@ -219,7 +244,18 @@ export default function Dashboard() {
                     .filter((m) => m.morning_qty > 0)
                     .map((m) => (
                       <div className="flex items-center mb-4 gap-3" key={m.id}>
-                        <Checkbox id={"cbdone_morn" + m.id} />
+                        <Checkbox
+                          id={"cbdone_morn" + m.id}
+                          onCheckedChange={(e) =>
+                            routineSetDone(m.drug_info.id, "morn", e as boolean)
+                          }
+                          defaultChecked={
+                            routines.find(
+                              (v) =>
+                                v.drug_id == m.drug_info.id && v.time == "morn"
+                            )?.taken || false
+                          }
+                        />
                         <label htmlFor={"cbdone_morn" + m.id}>
                           {m.drug} <br />
                           <span className="bg-rose-100 dark:bg-rose-950 text-rose-950 dark:text-rose-50 py-1 px-3 rounded-full text-sm">
@@ -250,7 +286,18 @@ export default function Dashboard() {
                     .filter((m) => m.afternoon_qty > 0)
                     .map((m) => (
                       <div className="flex items-center mb-4 gap-3" key={m.id}>
-                        <Checkbox id={"cbdone_aft" + m.id} />
+                        <Checkbox
+                          id={"cbdone_aft" + m.id}
+                          onCheckedChange={(e) =>
+                            routineSetDone(m.drug_info.id, "aft", e as boolean)
+                          }
+                          defaultChecked={
+                            routines.find(
+                              (v) =>
+                                v.drug_id == m.drug_info.id && v.time == "aft"
+                            )?.taken || false
+                          }
+                        />
                         <label htmlFor={"cbdone_aft" + m.id}>
                           {m.drug} <br />
                           <span className="bg-rose-100 dark:bg-rose-950 text-rose-950 dark:text-rose-50 py-1 px-3 rounded-full text-sm">
@@ -281,7 +328,18 @@ export default function Dashboard() {
                     .filter((m) => m.night_qty > 0)
                     .map((m) => (
                       <div className="flex items-center mb-4 gap-3" key={m.id}>
-                        <Checkbox id={"cbdone_eve" + m.id} />
+                        <Checkbox
+                          id={"cbdone_eve" + m.id}
+                          onCheckedChange={(e) =>
+                            routineSetDone(m.drug_info.id, "eve", e as boolean)
+                          }
+                          defaultChecked={
+                            routines.find(
+                              (v) =>
+                                v.drug_id == m.drug_info.id && v.time == "eve"
+                            )?.taken || false
+                          }
+                        />
                         <label htmlFor={"cbdone_eve" + m.id}>
                           {m.drug} <br />
                           <span className="bg-rose-100 dark:bg-rose-950 text-rose-950 dark:text-rose-50 py-1 px-3 rounded-full text-sm">
@@ -385,20 +443,6 @@ export default function Dashboard() {
                 ))}
               </div>
             )}
-          </TabsContent>
-          <TabsContent value="order">
-            <div className="text-xl font-semibold mb-4">Order medicines</div>
-
-            {medicines.map((m) => (
-              <div key={m.id} className="flex gap-4 items-center mt-4">
-                {m.drug} <br />
-                {m.drug_info.pack_size} <br />
-                <span className="bg-rose-100 dark:bg-rose-950 text-rose-950 dark:text-rose-50 py-1 px-3 rounded-full text-sm">
-                  {m.morning_qty + m.afternoon_qty + m.night_qty}{" "}
-                  {m.drug_info.singular_term}s remaining
-                </span>
-              </div>
-            ))}
           </TabsContent>
         </Tabs>
         {medicines.length > 0 && <></>}

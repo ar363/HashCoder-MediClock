@@ -24,3 +24,9 @@ type Prescription = {
   notes: string;
   drugs: PrescribedDrug[];
 };
+
+type Routine = {
+  drug_id: number;
+  time: string;
+  taken: boolean;
+};

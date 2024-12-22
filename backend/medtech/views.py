@@ -7,6 +7,7 @@ import jwt
 from django.contrib.auth.models import User
 from django.conf import settings
 from . import models
+from datetime import datetime
 
 api = NinjaAPI(title="MedTech API", version="1.0.0")
 
@@ -120,3 +121,36 @@ def patient_update(request, data: PatientUpdateSchema):
     patient.save()
 
     return patient.as_dict()
+
+
+class PatientRoutineSchema(Schema):
+    drug_id: int
+    time: str
+    done: bool
+
+
+@api.post("/patient/routine", auth=auth)
+def routine_set(request, data: PatientRoutineSchema):
+    u = User.objects.filter(id=request.auth).first()
+    if not u:
+        return api.create_response(request, {"error": "User not found"}, status=200)
+
+    models.Routine.objects.update_or_create(
+        user=u,
+        drug_id=data.drug_id,
+        time=data.time,
+        date=datetime.now().date(),
+        defaults={"taken": data.done},
+    )
+
+    return {"ok": True}
+
+
+@api.get("/patient/routine", auth=auth)
+def routine_get(request):
+    u = User.objects.filter(id=request.auth).first()
+    if not u:
+        return api.create_response(request, {"error": "User not found"}, status=200)
+
+    routines = models.Routine.objects.filter(user=u, date=datetime.now().date())
+    return {"routines": [r.as_dict() for r in routines]}
