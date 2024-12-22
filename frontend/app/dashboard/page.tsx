@@ -170,7 +170,6 @@ export default function Dashboard() {
       .then((res) => res.json())
       .then((data) => {
         toast.success("Order placed!");
-        setOrders((prev) => [data, ...prev]);
         setTab("orderhist");
       });
   };
